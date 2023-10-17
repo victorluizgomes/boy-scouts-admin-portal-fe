@@ -40,7 +40,6 @@ const CampDescriptionForm: React.FC<CampDescriptionFormProps> = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       campLocation: "bert-adams",
-      description: "",
     },
   })
 

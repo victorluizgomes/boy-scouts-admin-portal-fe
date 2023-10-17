@@ -48,7 +48,7 @@ const AlertForm: React.FC<AlertFormProps> = () => {
     defaultValues: {
       type: "information",
       campLocation: "bert-adams",
-      description: "",
+      expirationDate: new Date(),
     },
   })
 
@@ -60,7 +60,7 @@ const AlertForm: React.FC<AlertFormProps> = () => {
   }
 
   return (
-    <div>
+    <div className='mb-8'>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
