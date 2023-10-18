@@ -31,10 +31,10 @@ import { Input } from "./ui/Input"
 import { Button } from "./ui/Button"
 
 interface AlertFormProps {
-  // Add any props you might need here
+  onPostSuccess: () => void;
 }
 
-const AlertForm: React.FC<AlertFormProps> = () => {
+const AlertForm: React.FC<AlertFormProps> = ({ onPostSuccess }) => {
 
   const formSchema = z.object({
     type: z.string(),
@@ -48,16 +48,61 @@ const AlertForm: React.FC<AlertFormProps> = () => {
     defaultValues: {
       type: "information",
       campLocation: "bert-adams",
+      description: '',
       expirationDate: new Date(),
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    // TODO: Actually submit the form
-    console.log(values)
-  }
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+
+    // Convert the Date Object to Date and Time
+    const dateOptions: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    };
+
+    const dateString = values.expirationDate.toLocaleDateString('en-US', dateOptions);
+
+    const formattedDate = `${dateString} EST`;
+    console.log('Sending Date: ', formattedDate);
+
+    // Format the data for the API
+    const formattedData = {
+        datetime: formattedDate,
+        location: values.campLocation,
+        description: values.description,
+        type: values.type.charAt(0).toUpperCase() + values.type.slice(1),
+    };
+
+    // Make the POST request
+    try {
+        await fetch("https://jah5bhajkh.execute-api.us-east-1.amazonaws.com/DEV/alerts", {
+            method: 'POST',
+            headers: {
+                "x-api-key": "efmr7ASvRi1VX7tFhp4tPaJn6sK9jLqe4CpgEDmm",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formattedData),
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success POST data:', data);
+          onPostSuccess();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+
+    } catch (error) {
+        console.error("Error posting alert:", error);
+    }
+}
 
   return (
     <div className='mb-8'>
