@@ -16,6 +16,7 @@ export interface CampData {
 const CampDisplayList: React.FC<CampDisplayListProps> = ({ refreshData }) => {
   const [campDescriptions, setCampDescriptions] = useState<CampData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [dataVersion, setDataVersion] = useState<number>(0);
 
   useEffect(() => {
     const fetchDescriptions = async () => {
@@ -30,11 +31,6 @@ const CampDisplayList: React.FC<CampDisplayListProps> = ({ refreshData }) => {
         let data: CampData[] = await response.json();
         console.log("Camp Description DATA fetched: ", data);
 
-        // Filter any bad data
-        data = data.filter(
-          (item) => item.address !== "" && item.address !== undefined
-        );
-
         setCampDescriptions(data);
       } catch (error) {
         console.error("Error fetching camp descriptions:", error);
@@ -44,7 +40,35 @@ const CampDisplayList: React.FC<CampDisplayListProps> = ({ refreshData }) => {
     };
 
     fetchDescriptions();
-  }, [refreshData]);
+  }, [refreshData, dataVersion]);
+
+  const deleteDescription = async (descriptionId: string) => {
+    try {
+      const url = `https://jah5bhajkh.execute-api.us-east-1.amazonaws.com/DEV/descriptions`;
+      // Construct the request payload
+      const requestBody = {
+        id: descriptionId,
+      };
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          "x-api-key": "efmr7ASvRi1VX7tFhp4tPaJn6sK9jLqe4CpgEDmm",
+        },
+        body: JSON.stringify(requestBody),
+      });
+      const text = await response.text();
+      const responseData = text ? JSON.parse(text) : {};
+
+      if (!response.ok) {
+        throw new Error(responseData.message || "Failed to delete description.");
+      }
+
+      console.log("Description deleted successfully:", responseData.message);
+      setDataVersion(prevVersion => prevVersion + 1);
+    } catch (error) {
+      console.error("Error deleting description:", error);
+    }
+  };
 
   return (
     <div>
@@ -55,9 +79,11 @@ const CampDisplayList: React.FC<CampDisplayListProps> = ({ refreshData }) => {
         campDescriptions.map((descriptions) => (
           <CampDescription
             key={descriptions.id}
+            id={descriptions.id}
             location={descriptions.location}
             description={descriptions.description}
             address={descriptions.address}
+            deleteItemClicked={deleteDescription}
           />
         ))
       )}
