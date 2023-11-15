@@ -18,14 +18,20 @@ const CampDisplayList: React.FC<CampDisplayListProps> = ({ refreshData }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [dataVersion, setDataVersion] = useState<number>(0);
 
+  const apiKey = process.env.REACT_APP_API_KEY;
+
   useEffect(() => {
     const fetchDescriptions = async () => {
+      if (!apiKey) {
+        console.error('API KEY Environment Variable not defined or set incorrectly');
+        return;
+      }
       try {
         setIsLoading(true);
         const url = `https://jah5bhajkh.execute-api.us-east-1.amazonaws.com/DEV/descriptions`;
         const response = await fetch(url, {
           headers: {
-            "x-api-key": "efmr7ASvRi1VX7tFhp4tPaJn6sK9jLqe4CpgEDmm",
+            "x-api-key": apiKey,
           },
         });
         let data: CampData[] = await response.json();
@@ -43,6 +49,10 @@ const CampDisplayList: React.FC<CampDisplayListProps> = ({ refreshData }) => {
   }, [refreshData, dataVersion]);
 
   const deleteDescription = async (descriptionId: string) => {
+    if (!apiKey) {
+      console.error('API KEY Environment Variable not defined or set incorrectly');
+      return;
+    }
     try {
       const url = `https://jah5bhajkh.execute-api.us-east-1.amazonaws.com/DEV/descriptions`;
       // Construct the request payload
@@ -52,7 +62,7 @@ const CampDisplayList: React.FC<CampDisplayListProps> = ({ refreshData }) => {
       const response = await fetch(url, {
         method: "DELETE",
         headers: {
-          "x-api-key": "efmr7ASvRi1VX7tFhp4tPaJn6sK9jLqe4CpgEDmm",
+          "x-api-key": apiKey,
         },
         body: JSON.stringify(requestBody),
       });

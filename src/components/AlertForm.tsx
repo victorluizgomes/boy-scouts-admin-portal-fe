@@ -36,6 +36,8 @@ interface AlertFormProps {
 
 const AlertForm: React.FC<AlertFormProps> = ({ onPostSuccess }) => {
 
+  const apiKey = process.env.REACT_APP_API_KEY;
+
   const formSchema = z.object({
     type: z.string(),
     campLocation: z.string(),
@@ -81,11 +83,15 @@ const AlertForm: React.FC<AlertFormProps> = ({ onPostSuccess }) => {
     };
 
     // Make the POST request
+    if (!apiKey) {
+      console.error('API KEY Environment Variable not defined or set incorrectly');
+      return;
+    }
     try {
         await fetch("https://jah5bhajkh.execute-api.us-east-1.amazonaws.com/DEV/alerts", {
             method: 'POST',
             headers: {
-                "x-api-key": "efmr7ASvRi1VX7tFhp4tPaJn6sK9jLqe4CpgEDmm",
+                "x-api-key": apiKey,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(formattedData),
